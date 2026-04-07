@@ -205,3 +205,118 @@ Projekt realizuje wszystkie podstawowe wymagania laboratorium:
 - przygotowano dodatkowe endpointy `/info` i `/health`,
 - obsłużono walidację danych wejściowych,
 - wykonano testy zarówno w Postmanie, jak i przy użyciu cURL.
+
+
+# LAB04 - Docker i konteneryzacja modelu ML
+
+W ramach kolejnego laboratorium projekt został rozszerzony o konteneryzację aplikacji przy użyciu **Dockera**.  
+Celem tej części projektu było przygotowanie obrazu Dockera z aplikacją ML z poprzednich zajęć, uruchomienie kontenera, przetestowanie endpointów oraz skonfigurowanie środowiska wieloserwisowego.
+
+## Dodatkowe pliki projektu
+
+Po rozszerzeniu projektu repozytorium zawiera:
+
+```text
+lab03ntpd/
+├── app.py
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+├── README.md
+└── artifacts/
+    └── model_v1.joblib
+```
+
+## Uruchomienie aplikacji za pomocą Dockera
+
+### Budowa obrazu
+
+```bash
+docker build -t fastapi-ml-api .
+```
+
+### Uruchomienie kontenera
+
+```bash
+docker run -d -p 8000:8000 --name fastapi-ml-api-container fastapi-ml-api
+```
+
+### Sprawdzenie działania
+
+```bash
+docker ps
+```
+
+Po uruchomieniu aplikacja będzie dostępna pod adresem:
+
+- `http://127.0.0.1:8000/`
+- `http://127.0.0.1:8000/docs`
+
+Przykładowy test endpointu:
+
+```bash
+curl http://127.0.0.1:8000/health
+```
+
+## Uruchomienie aplikacji za pomocą Docker Compose
+
+### Start usług
+
+```bash
+docker compose up -d --build
+```
+
+### Sprawdzenie uruchomionych usług
+
+```bash
+docker compose ps
+```
+
+W aktualnej konfiguracji uruchamiane są dwa serwisy:
+
+- `api` – aplikacja FastAPI z modelem ML,
+- `mongodb` – dodatkowy serwis działający w tej samej sieci dockerowej.
+
+### Zatrzymanie środowiska
+
+```bash
+docker compose down
+```
+
+Po uruchomieniu aplikacja będzie dostępna na porcie `8000`, a dodatkowy serwis MongoDB na porcie `27017`.
+
+## Konfiguracja parametrów aplikacji
+
+W aktualnej wersji projektu aplikacja nie wymaga definiowania własnych zmiennych środowiskowych do działania.  
+Najważniejsze parametry konfiguracyjne wynikają z plików `Dockerfile` oraz `docker-compose.yml`.
+
+### Najważniejsze ustawienia
+
+- aplikacja HTTP nasłuchuje na porcie `8000`,
+- kontener API mapuje port `8000:8000`,
+- serwis MongoDB mapuje port `27017:27017`,
+- oba serwisy działają w tej samej sieci dockerowej.
+
+### Zmienne środowiskowe
+
+W tej wersji projektu nie zdefiniowano własnych zmiennych środowiskowych, ponieważ aplikacja działa poprawnie bez dodatkowej konfiguracji.  
+Jeśli projekt byłby dalej rozwijany, do zmiennych środowiskowych można byłoby przenieść na przykład:
+
+- numer portu aplikacji,
+- nazwę hosta,
+- dane połączenia do bazy danych,
+- tryb uruchomienia aplikacji.
+
+Takie podejście ułatwia późniejszą rozbudowę projektu i dostosowanie konfiguracji do różnych środowisk.
+
+## Wymagane zasoby
+
+Aplikacja jest lekka i do działania potrzebuje podstawowych zasobów:
+
+- Python 3.13 lub środowisko Docker,
+- biblioteki z pliku `requirements.txt`,
+- dostępu do portu `8000`,
+- pliku modelu `artifacts/model_v1.joblib`,
+- w przypadku Docker Compose: wolnego portu `27017` dla serwisu MongoDB.
+
+Ze względu na prosty model ML i niewielką liczbę zależności projekt nie wymaga dużej ilości pamięci RAM ani mocy obliczeniowej.

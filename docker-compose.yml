@@ -1,0 +1,22 @@
+services:
+  api:
+    build: .
+    container_name: fastapi-ml-api-compose
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongodb
+    networks:
+      - ml-network
+
+  mongodb:
+    image: mongo:7
+    container_name: fastapi-mongodb
+    ports:
+      - "27017:27017"
+    networks:
+      - ml-network
+
+networks:
+  ml-network:
+    driver: bridge

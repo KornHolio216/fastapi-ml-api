@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -7,6 +8,7 @@ from sklearn.linear_model import LogisticRegression
 
 MODEL_PATH = Path("artifacts/model_v1.joblib")
 RANDOM_STATE = 42
+APP_ENV = os.getenv("APP_ENV", "development")
 
 class PredictionInput(BaseModel):
     feature_1: float
@@ -63,11 +65,15 @@ def info() -> dict:
         "number_of_features": 2,
         "classes": ["klasa_0", "klasa_1"],
         "model_path": str(MODEL_PATH),
+        "app_env": APP_ENV,
     }
 
 @app.get("/health")
 def health() -> dict:
-    return {"status": "ok"}
+    return {
+        "status": "ok",
+        "app_env": APP_ENV,
+    }
 
 @app.post("/predict")
 def predict(data: PredictionInput) -> dict:
@@ -85,6 +91,7 @@ def predict(data: PredictionInput) -> dict:
                 "feature_1": data.feature_1,
                 "feature_2": data.feature_2,
             },
+            "app_env": APP_ENV,
         }
     except Exception as error:
         raise HTTPException(status_code=500, detail=f"Blad podczas predykcji: {str(error)}")
